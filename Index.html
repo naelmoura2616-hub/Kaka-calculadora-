@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#080d24">
+<title>Calculadora Digital Pro 2.0</title>
+<style>
+*{box-sizing:border-box} 
+:root{--cyan:#36e7ff;--green:#42ffb0;--panel:rgba(5,10,30,.88)}
+body{margin:0;min-height:100vh;padding:22px 14px;font-family:Arial,sans-serif;color:#f5fbff;background:linear-gradient(-45deg,#05051c,#102c59,#42136c,#006b78);background-size:400% 400%;animation:bg 14s ease infinite}
+@keyframes bg{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.wrap{width:min(100%,480px);margin:auto}.panel{background:var(--panel);border:1px solid #36e7ff66;border-radius:22px;padding:20px;box-shadow:0 0 28px #00d9ff35;backdrop-filter:blur(12px)}
+h1{text-align:center;font-size:clamp(21px,6vw,28px);color:var(--cyan);text-shadow:0 0 15px #36e7ff88;margin:2px 0 16px}
+.clock{text-align:center;background:#020713;border:1px solid #36e7ff88;border-radius:14px;padding:12px;margin-bottom:16px}
+#time{font-size:32px;font-weight:bold;color:var(--green);letter-spacing:2px;text-shadow:0 0 12px #42ffb088}
+#date{font-size:13px;color:#a9c3d6;margin-top:5px}
+.display{width:100%;height:76px;background:#020713;color:var(--green);border:1px solid var(--cyan);border-radius:12px;text-align:right;padding:12px;font-size:30px;margin-bottom:11px;outline:none}
+.keys{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+button{border:0;border-radius:11px;min-height:54px;font-size:19px;font-weight:bold;color:white;background:#17284c;cursor:pointer;box-shadow:0 3px 9px #0005;transition:transform .08s,filter .15s}
+button:active{transform:scale(.96);filter:brightness(1.3)}
+.op{background:#075d82}.danger{background:#a92345}.equal{background:#087d5a}.wide{grid-column:span 2}
+h2{font-size:19px;color:var(--cyan);margin:22px 0 10px}
+.field{margin:10px 0}.field label{display:block;font-size:13px;color:#b8c9df;margin-bottom:6px}
+.field input{width:100%;padding:13px;border:1px solid #36e7ff88;border-radius:9px;background:#020713;color:#fff;font-size:17px;outline:none}
+.action{width:100%;min-height:46px;background:#087d68;font-size:15px;margin-top:7px}
+.result{margin-top:12px;padding:13px;text-align:center;background:#020713;border:1px solid #42ffb066;border-radius:10px;color:var(--green);font-size:21px;font-weight:bold}
+.memory{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:9px}
+.memory button{min-height:40px;font-size:14px;background:#34416b}
+.rowhead{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.rowhead button{min-height:34px;padding:0 11px;font-size:12px;background:#57304e}
+.history{list-style:none;margin:8px 0 0;padding:0;max-height:170px;overflow:auto}
+.history li{padding:8px 5px;border-bottom:1px solid #ffffff18;color:#d7e6f5;font-size:13px;display:flex;justify-content:space-between;gap:10px}
+.history small{color:#91a9c1}
+footer{text-align:center;color:#9bb0c7;font-size:11px;margin:16px 0 4px}
+@media(max-width:360px){.panel{padding:14px}.keys{gap:6px}button{min-height:49px}.display{font-size:25px}}
+@media print{body{background:white;color:black}.panel{box-shadow:none;background:white;color:black;border:1px solid #888}.clock,.keys,.memory,.action,.rowhead button{display:none!important}.result,.field input{color:black;background:white}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<section class="panel">
+<h1>⚡ CALCULADORA PRO 2.0</h1>
+<div class="clock"><div id="time">00:00:00</div><div id="date"></div></div>
+
+<input id="display" class="display" value="0" aria-label="Visor da calculadora" readonly>
+<div class="keys">
+<button class="danger" onclick="clearDisplay()">AC</button>
+<button class="op" onclick="backspace()">⌫</button>
+<button class="op" onclick="percent()">%</button>
+<button class="op" onclick="append('/')">÷</button>
+<button onclick="append('7')">7</button><button onclick="append('8')">8</button><button onclick="append('9')">9</button><button class="op" onclick="append('*')">×</button>
+<button onclick="append('4')">4</button><button onclick="append('5')">5</button><button onclick="append('6')">6</button><button class="op" onclick="append('-')">−</button>
+<button onclick="append('1')">1</button><button onclick="append('2')">2</button><button onclick="append('3')">3</button><button class="op" onclick="append('+')">+</button>
+<button onclick="append('0')">0</button><button onclick="append('.')">.</button><button class="equal wide" onclick="calculate()">=</button>
+</div>
+
+<div class="memory">
+<button onclick="memoryAdd()">M+</button><button onclick="memorySubtract()">M−</button><button onclick="memoryRecall()">MR</button><button onclick="memoryClear()">MC</button>
+</div>
+
+<h2>💰 Calculadora de troco</h2>
+<div class="field"><label for="purchase">Valor da compra (R$)</label><input id="purchase" type="number" min="0" step="0.01" placeholder="Ex.: 75,50"></div>
+<div class="field"><label for="paid">Valor recebido (R$)</label><input id="paid" type="number" min="0" step="0.01" placeholder="Ex.: 100,00"></div>
+<button class="action" onclick="calculateChange()">CALCULAR TROCO</button>
+<div class="result" id="changeResult" aria-live="polite">Troco: R$ 0,00</div>
+
+<h2>🧾 Histórico de cálculos</h2>
+<div class="rowhead"><small style="color:#a9bfd4">Os últimos resultados desta sessão</small><button onclick="clearHistory()">Limpar histórico</button></div>
+<ul class="history" id="history"><li><small>Nenhum cálculo ainda.</small></li></ul>
+<button class="action" onclick="window.print()">🖨️ IMPRIMIR / SALVAR PDF</button>
+<footer>CALCULADORA DIGITAL PRO 2.0 • Funciona offline</footer>
+</section>
+</main>
+<script>
+const display=document.getElementById('display');
+let memory=0;
+function updateClock(){
+ const d=new Date();
+ document.getElementById('time').textContent=d.toLocaleTimeString('pt-BR');
+ document.getElementById('date').textContent=d.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+}
+updateClock();setInterval(updateClock,1000);
+function append(v){
+ if(display.value==='Erro')display.value='0';
+ if(display.value==='0' && /[0-9]/.test(v) && v!=='.')display.value=v;
+ else display.value+=v;
+}
+function clearDisplay(){display.value='0'}
+function backspace(){display.value=display.value.slice(0,-1)||'0'}
+function safeEvaluate(s){
+ if(!/^[0-9+\-*/.() ]+$/.test(s))throw Error('Expressão inválida');
+ const n=Function('"use strict";return ('+s+')')();
+ if(!Number.isFinite(n))throw Error('Resultado inválido');
+ return Number(n.toPrecision(12));
+}
+function calculate(){
+ try{const expr=display.value;const result=safeEvaluate(expr);display.value=String(result);addHistory(expr+' =',formatNumber(result));}
+ catch(e){display.value='Erro'}
+}
+function percent(){
+ try{const n=safeEvaluate(display.value)/100;display.value=String(n)}
+ catch(e){display.value='Erro'}
+}
+function currentNumber(){try{return safeEvaluate(display.value)}catch(e){return 0}}
+function memoryAdd(){memory+=currentNumber()}
+function memorySubtract(){memory-=currentNumber()}
+function memoryRecall(){display.value=String(memory)}
+function memoryClear(){memory=0}
+function formatNumber(n){return n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}
+function moneyInput(id){const raw=document.getElementById(id).value.trim().replace(',','.');return raw===''?NaN:Number(raw)}
+function calculateChange(){
+ const purchase=moneyInput('purchase'),paid=moneyInput('paid'),out=document.getElementById('changeResult');
+ if(!Number.isFinite(purchase)||!Number.isFinite(paid)||purchase<0||paid<0){out.textContent='Informe valores válidos.';return}
+ const cents=Math.round((paid-purchase)*100);
+ if(cents<0){out.textContent='Faltam: R$ '+formatNumber(Math.abs(cents)/100);addHistory('Falta receber','R$ '+formatNumber(Math.abs(cents)/100))}
+ else{out.textContent='Troco: R$ '+formatNumber(cents/100);addHistory('Troco calculado','R$ '+formatNumber(cents/100))}
+}
+function addHistory(label,value){
+ const list=document.getElementById('history');
+ if(list.querySelector('small')?.textContent==='Nenhum cálculo ainda.')list.innerHTML='';
+ const li=document.createElement('li'),a=document.createElement('span'),b=document.createElement('strong');
+ a.textContent=label;b.textContent=value;li.append(a,b);list.prepend(li);
+ while(list.children.length>20)list.lastElementChild.remove();
+}
+function clearHistory(){document.getElementById('history').innerHTML='<li><small>Nenhum cálculo ainda.</small></li>'}
+</script>
+</body>
+</html>
